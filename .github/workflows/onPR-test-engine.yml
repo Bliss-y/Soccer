@@ -1,0 +1,59 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+# See:
+# https://github.com/marketplace/actions/vitest-coverage-report
+# https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+
+name: Node.js CI
+
+on:
+  pull_request_target:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+      pull-requests: write
+
+    steps:
+    - name: Checkout, setup nodejs
+      uses: bhoos/shared-actions/checkout-setup-nodejs@main
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        fetch-tags: true
+        fetch-depth: 0
+        scope: '@bhoos'
+
+    - name: Comparing recent tag with current version in package.json
+      uses: bhoos/shared-actions/version-check2@main
+
+    - name: Cache npm
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-build-${{ hashFiles('**/soccer-engine/package.json') }}
+        restore-keys: |
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+    - run: npm install
+      working-directory: ./soccer-engine
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+    - run: npm run build
+      working-directory: ./soccer-engine
+
+    - run: npm test -- --coverage run
+      working-directory: ./soccer-engine
+
+    - name: Report Coverage
+      uses: davelosert/vitest-coverage-report-action@v2
+      with:
+        working-directory: ./soccer-engine

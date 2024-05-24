@@ -1,0 +1,57 @@
+# When issue is created with title "Deploy" and anybody
+# comment "/deploy" in comment this workflow is triggered.
+# This workflow publish the package in @next tag.
+
+name: Process master branch for @staging tag
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  prepare-master:
+    if: ${{  contains(github.event.comment.html_url, '/issues') && contains(github.event.comment.body, '/deploy') && (github.event.issue.state == 'open') && startsWith(github.event.issue.title, 'Deploy') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build from main branch
+        uses: bhoos/shared-actions/checkout-setup-nodejs@main
+        with:
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
+          scope: '@bhoos'
+
+      - name: Install Dependencies and publish packages
+        run: |
+          yarn
+          yarn lerna run build
+          yarn lerna publish from-package --yes --no-verify-access --dist-tag latest
+          version=$(node -p "require('./soccer-app-interface/package.json').version")
+          echo "RELEASE_VERSION=v${version}" >> $GITHUB_ENV
+          echo "ISSUE_NUMBER=${{github.event.issue.number}}" >> $GITHUB_ENV
+          echo "REPO_NAME=$(echo $REPO | awk -F'[\/]' '{print $2}')" >> $GITHUB_ENV
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          REPO: ${{ github.repository }}
+
+      - name: Create bhoos-games.rc
+        run: |
+          echo $BHOOS_GAMES_RC > ~/.bhoos-games.rc
+        env: 
+          BHOOS_GAMES_RC: ${{ secrets.BHOOS_GAMES_RC }}
+      
+      - name: Create game-release
+        run: |
+          yarn global add @bhoos/super-game-bundler
+          cd *-app-interface && bhoos-games publish -t staging
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Create Release for moving to production
+        uses: bhoos/shared-actions/create-release@main
+        with:
+          tag: ${{ env.RELEASE_VERSION }}
+          title: Release ${{ env.REPO_NAME }} (${{ env.RELEASE_VERSION }})
+          target: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
