@@ -5,6 +5,7 @@ import { Oracle } from '@bhoos/serialization';
 import { PlayApi } from './apis';
 import { soccerConfig } from './soccerConfig.js';
 import { StateEvent } from './actions/StateEvent.js';
+import { warn } from 'console';
 
 export const GAME_SIZE_Y = 400;
 export const GAME_SIZE_X = 800;
@@ -188,6 +189,23 @@ export class Ball extends GameObject {
         this.position.y = this.attachedPlayer.position.y +  this.attachedPlayer.direction.y * (this.attachedPlayer.radius + this.radius);
       }
     })
+
+    if(this.position.x + this.radius > goalPosts[0].x && this.position.x - this.radius <= goalPosts[0].x + GOAL_POST_WIDTH){
+      // someone may have scored gaol
+      if(this.position.y + this.radius > goalPosts[0].y) {
+        // team one scored
+        this.scores[0] += 1
+        this.onGoal();
+        return;
+      }
+      if(this.position.y - this.radius < goalPosts[1].y) {
+        // team two scored
+        this.scores[0] += 1
+        this.onGoal();
+        return;
+      }
+    }
+
     const wallTouch = wallCollision(this.position, this.radius);
     console.log("walltouch",wallTouch);
 
@@ -207,18 +225,6 @@ export class Ball extends GameObject {
     }
 
 
-    if(this.position.x > goalPosts[0].x && this.position.x <= goalPosts[0].x + GOAL_POST_WIDTH){
-      // someone may have scored gaol
-      if(this.position.y > goalPosts[0].y) {
-        // team one scored
-        this.scores[0] += 1
-      }
-      if(this.position.y < goalPosts[1].y) {
-        // team two scored
-        this.scores[0] += 1
-      }
-      this.onGoal;
-    }
   }
 }
 
