@@ -36,7 +36,12 @@ export async function soccerLoop(match: Match<soccer>, config: soccerConfig) {
       p.movementSpeed = {x:0, y:0}
       p.direction = {x:0, y:1}
       p.position = {...p.initialPosition}
+      p.isBallAttached = false;
+      p.boosted = false;
+      p.boostedTick = 0;
+      p.boostCd = 0;
     })
+    ball.attachedPlayer = undefined;
     ball.position.y = GAME_SIZE_Y/2
     ball.position.x = GAME_SIZE_X/2
     ball.movement_speed.x = 0
@@ -70,6 +75,12 @@ export async function soccerLoop(match: Match<soccer>, config: soccerConfig) {
       continue;
     }
 
+    ball.scores.forEach(s=> {
+      if(s == 5) {
+        return match.end(0);
+      }
+    })
+
     controls.forEach((c,idx)=> {
       if(!c) {
         return;
@@ -82,6 +93,7 @@ export async function soccerLoop(match: Match<soccer>, config: soccerConfig) {
     })
 
     ball.update(0);
+
     
     controls = [undefined, undefined, undefined, undefined];
     match.emit(StateEvent.create(ball), true);

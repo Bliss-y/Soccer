@@ -205,6 +205,7 @@ export class Ball extends GameObject {
       }else {
         this.movement_speed.y = 0;
       }
+
     }
 
     if (this.attachedPlayer && this.invTick) {
@@ -216,8 +217,7 @@ export class Ball extends GameObject {
       this.players.forEach((p, idx) => {
         const cl = circleCollision(this, p);
         if (cl.x != 0 || cl.y != 0) {
-          if(this.invTick >0) {
-            this.invTick = 0;
+          if(this.invTick) {
             return;
           }
           if (p == this.attachedPlayer) {
@@ -232,13 +232,11 @@ export class Ball extends GameObject {
           this.position.x = this.attachedPlayer.position.x + this.attachedPlayer.direction.x * (this.attachedPlayer.radius + this.radius);
           this.position.y = this.attachedPlayer.position.y + this.attachedPlayer.direction.y * (this.attachedPlayer.radius + this.radius);
           this.invTick = 10;
-          this.movement_speed = {x: 0, y: 0};
-          this.direction = {x: 0, y: 0};
         }
       })
     }
 
-    if (this.position.y + this.radius >= goalPosts[0].y - GOAL_POST_WIDTH/2 && this.position.y - this.radius <= goalPosts[0].y + GOAL_POST_WIDTH/2) {
+    if (this.position.y + this.radius >= goalPosts[0].y && this.position.y - this.radius <= goalPosts[0].y + GOAL_POST_WIDTH) {
       // someone may have scored gaol
       if (this.position.x + this.radius >= goalPosts[0].x) {
         // team one scored
@@ -266,7 +264,7 @@ export class Ball extends GameObject {
 
     if (wallTouch.y != 0) {
       console.log("walltouchy", wallTouch);
-      this.direction.y *= -1;
+      this.direction.x *= -1;
       this.position.y -= wallTouch.y * 5;
     }
 

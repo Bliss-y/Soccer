@@ -41,11 +41,13 @@ function createPlayerWidget(sm: SpriteManager, ui: soccerUI, offset: number) {
       }
       return {
         isWinner: state.winnerIdx === playerIdx,
-        profile: player,
+        profile: {...player, picture: pictures[offset]},
       } as PlayerWidget['state'];
     },
   );
 }
+
+const pictures = ['/soccer/kyle', '/soccer/ericsmile', '/soccer/ericpolice', '/soccer/kenny'];
 
 export function createWidgets(ui: soccerUI, sm: SpriteManager, config: soccerConfig) {
 

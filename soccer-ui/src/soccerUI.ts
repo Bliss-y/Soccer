@@ -8,12 +8,15 @@ import {
   StartGameAction,
   StateEvent,
   PLAYER_RADIUS,
+  goalPosts,
 } from '@bhoos/soccer-engine';
 import { soccerLayouts, computeLayouts, createWidgets } from './soccerWidgets';
 import { ConfigOf } from '@bhoos/game-kit-engine';
 import { StickController } from './widgets/StickController';
 import { GAME_SIZE_X, GAME_SIZE_Y, Position } from '@bhoos/soccer-engine';
 import { CircleSprite } from './sprites/ObjectSpr';
+import { PostSprite } from './sprites/GoalPost';
+import { ScoreSprite } from './sprites/scoreSpr';
 
 const ANIMATION_SPEED = 1;
 const FLIP_SPEED_300 = ANIMATION_SPEED * 300;
@@ -40,6 +43,7 @@ export class soccerUI implements UI<soccer, soccerUIEnv> {
   public layouts: soccerLayouts;
   private _layout: CoordinateSystem;
   private widgets;
+  scorespr: ScoreSprite;
 
   constructor(layout: CoordinateSystem, config: ConfigOf<soccer>) {
     console.log('Creating UI');
@@ -47,6 +51,11 @@ export class soccerUI implements UI<soccer, soccerUIEnv> {
     this.sm = new SpriteManager(layout);
     this.layouts = computeLayouts(layout);
     this.widgets = createWidgets(this, this.sm, config);
+    console.log(goalPosts);
+    goalPosts.forEach((p)=> {
+      this.sm.registerSprite(new PostSprite({x: p.x, y: p.y}));
+    })
+    
     this.controller = new StickController(this.sm,emptyfunction, emptyfunction,
       (p: Position)=>{
         console.log("sending api", p);
@@ -65,12 +74,17 @@ export class soccerUI implements UI<soccer, soccerUIEnv> {
     this.ball = this.sm.registerSprite(new CircleSprite(
       PLAYER_RADIUS/2, {x: GAME_SIZE_X/2, y: GAME_SIZE_Y/2}, "blue"
     ))
+    this.scorespr = this.sm.registerSprite(new ScoreSprite({x: GAME_SIZE_X/2, y: 0}));
+
+
+
     return this;
   }
 
   onStateEvent(event: StateEvent): void {
     this.ball.position.x.animateTo(event.ball.position.x - PLAYER_RADIUS/2, animFrame);
     this.ball.position.y.animateTo(event.ball.position.y - PLAYER_RADIUS/2, animFrame);
+    this.scorespr.ref.setValue([...event.ball.scores]);
     event.ball.players.forEach((p, idx)=> {
       const newpos = toMinusPos(p.position);
       this.widgets.profiles[idx].profileSprite.x.animateTo(newpos.x, animFrame);
@@ -117,7 +131,9 @@ export class soccerUI implements UI<soccer, soccerUIEnv> {
   // ACTION HANDLERS
   async onStartGame(action: StartGameAction) {
     return async () => {
-      this.widgets.profiles.forEach(p=>p.draw());
+      this.widgets.profiles.forEach(
+        p=>p.draw()
+      );
     };
   }
 

@@ -1,4 +1,4 @@
-import { Attribute, Reference, Sprite, timingAnim } from "@bhoos/game-kit-ui";
+import { Attribute, Image, ImageBackground, Reference, Sprite, timingAnim } from "@bhoos/game-kit-ui";
 import { Canvas, Circle, Color, Group, RuntimeShader, Skia, useClock, vec } from "@shopify/react-native-skia";
 import { StyleSheet } from "react-native";
 import { Animated} from 'react-native';
@@ -29,12 +29,17 @@ export class CircleSprite implements Sprite {
   reactComponent(props?: {} | undefined): JSX.Element {
     return (
     <Animated.View {...props} style= {[StyleSheet.absoluteFill, { transform: [{translateX: this.position.x.animated}, {translateY: this.position.y.animated }],
-        opacity: 0.5,
+        opacity: 1,
         height: this.radius*2,
         width: this.radius*2,
-        backgroundColor: this.color,
+        backgroundColor:"white",
         borderRadius: this.radius
       }]} >
+      <Image path="/soccer/football" resizeMode="cover" style={{
+        height: this.radius*2,
+        width: this.radius*2,
+        borderRadius: this.radius
+        }} />
       </Animated.View>
     )
   }

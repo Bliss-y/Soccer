@@ -136,7 +136,7 @@ export function initializesoccerGame(): GameAppInterface<soccer> {
     ui: {
       layoutProps: () => {
         return {
-          bgImage: '/backgrounds/table/default',
+          bgImage: '/soccer/bg',
           minHeight: GAME_SIZE_Y,
           minWidth: GAME_SIZE_X
         };
