@@ -5,7 +5,6 @@ import { Oracle } from '@bhoos/serialization';
 import { PlayApi } from './apis';
 import { soccerConfig } from './soccerConfig.js';
 import { StateEvent } from './actions/StateEvent.js';
-import { warn } from 'console';
 
 export const GAME_SIZE_Y = 400;
 export const GAME_SIZE_X = 800;
@@ -73,6 +72,7 @@ export class Player extends GameObject{
   boostCd = 0;
   team: number;
   initialPosition: Position;
+  isBallAttached: boolean =  false;
   constructor(position: Position, radius: number, team: number) {
     super(position, radius);
     this.team = team;
@@ -111,8 +111,8 @@ export class Player extends GameObject{
       return;
     }
     this.direction = {...api.position}
-    this.movementSpeed.x = PLAYER_MOVEMENT_SPEED_DEFAULT;
-    this.movementSpeed.y = PLAYER_MOVEMENT_SPEED_DEFAULT;
+    this.movementSpeed.x =this.isBallAttached ? PLAYER_MOVEMENT_SPEED_SLOWED : PLAYER_MOVEMENT_SPEED_DEFAULT;
+    this.movementSpeed.y = this.isBallAttached ? PLAYER_MOVEMENT_SPEED_SLOWED : PLAYER_MOVEMENT_SPEED_DEFAULT;
   }
 }
 
@@ -163,6 +163,7 @@ export class Ball extends GameObject {
   direction: Position = {x: 0, y: 0};
   movement_speed = {x: 0, y: 0}
   onGoal: ()=>void;
+  invTick = 0; // amount of tick the ball cannot be attached
 
   constructor(position: Position, radius: number, onGoal: ()=>void) {
     super(position, radius);
@@ -180,15 +181,30 @@ export class Ball extends GameObject {
       this.movement_speed.y -= this.friction_rate;
     }
 
-    this.players.forEach((p,idx)=> {
-      const cl = circleCollision(this, p);
-      if(cl.x != 0 || cl.y != 0) {
-        console.log("attaching to ", idx, p);
-        this.attachedPlayer = p;
-        this.position.x = this.attachedPlayer.position.x +  this.attachedPlayer.direction.x * (this.attachedPlayer.radius + this.radius);
-        this.position.y = this.attachedPlayer.position.y +  this.attachedPlayer.direction.y * (this.attachedPlayer.radius + this.radius);
-      }
-    })
+    if(this.attachedPlayer && this.invTick)  {
+      console.log("invtick", this.invTick);
+      this.invTick--;
+    }
+
+    if(this.invTick == 0) {
+      this.players.forEach((p,idx)=> {
+        const cl = circleCollision(this, p);
+        if(cl.x != 0 || cl.y != 0) {
+          if(p == this.attachedPlayer) {
+            return;
+          } 
+          if(this.attachedPlayer) {
+            this.attachedPlayer.isBallAttached = false;
+          }
+          console.log("changing attachment", idx);
+          this.attachedPlayer = p;
+          p.isBallAttached = true;
+          this.position.x = this.attachedPlayer.position.x +  this.attachedPlayer.direction.x * (this.attachedPlayer.radius + this.radius);
+          this.position.y = this.attachedPlayer.position.y +  this.attachedPlayer.direction.y * (this.attachedPlayer.radius + this.radius);
+          this.invTick = 10;
+        }
+      })
+    }
 
     if(this.position.x + this.radius > goalPosts[0].x && this.position.x - this.radius <= goalPosts[0].x + GOAL_POST_WIDTH){
       // someone may have scored gaol
@@ -207,7 +223,6 @@ export class Ball extends GameObject {
     }
 
     const wallTouch = wallCollision(this.position, this.radius);
-    console.log("walltouch",wallTouch);
 
     if(wallTouch.x) {
       this.direction.x *=-1;
@@ -223,8 +238,6 @@ export class Ball extends GameObject {
       this.attachedPlayer.position.x -= wallTouch.x
       this.attachedPlayer.position.y -= wallTouch.y
     }
-
-
   }
 }
 
