@@ -1,4 +1,4 @@
-import { soccer, soccerBot, soccerConfig, soccerLoop, soccerPlayer, soccerState, registerToOracle } from '@bhoos/soccer-engine';
+import { soccer, soccerBot, soccerConfig, soccerLoop, soccerPlayer, soccerState, registerToOracle, GAME_SIZE_Y, GAME_SIZE_X } from '@bhoos/soccer-engine';
 import {
   GameAppInterface,
   Prefs,
@@ -32,7 +32,7 @@ const SINGLE_PLAYER_DEFAULT_ROOM: SinglePlayerRoomConfig<soccer> = {
   name: 'Default',
   config: DEFAULT_CONFIG,
   roomType: RoomType.Single,
-  minPlayers: 2,
+  minPlayers: 4,
   maxPlayers: 4,
   boot: 10,
   buyIn: 10,
@@ -43,7 +43,7 @@ const HOTSPOT_DEFAULT_ROOM: HotspotRoomConfig<soccer> = {
   name: 'Default',
   config: DEFAULT_CONFIG,
   roomType: RoomType.Hotspot,
-  minPlayers: 2,
+  minPlayers: 4,
   maxPlayers: 4,
   boot: 10,
   buyIn: 10,
@@ -69,11 +69,11 @@ export function initializesoccerGame(): GameAppInterface<soccer> {
       return !versionLt(version, '1.0.0');
     },
     reloadStorage: (version: string) => {
-      return versionLt(version, '1.0.0');
+      return true;
     },
     description: 'Click as fast as you can',
     supportedBots: Object.keys(BOTS),
-    initialSPBots: ['babita', 'pramod'],
+    initialSPBots: ['babita', 'pramod', 'gabbar'],
 
     initializeStorage: () => {
       return {
@@ -137,6 +137,8 @@ export function initializesoccerGame(): GameAppInterface<soccer> {
       layoutProps: () => {
         return {
           bgImage: '/backgrounds/table/default',
+          minHeight: GAME_SIZE_Y,
+          minWidth: GAME_SIZE_X
         };
       },
 

@@ -48,6 +48,7 @@ function createPlayerWidget(sm: SpriteManager, ui: soccerUI, offset: number) {
 }
 
 export function createWidgets(ui: soccerUI, sm: SpriteManager, config: soccerConfig) {
+
   return {
     profiles: [
       createPlayerWidget(sm, ui, 0),
@@ -55,16 +56,5 @@ export function createWidgets(ui: soccerUI, sm: SpriteManager, config: soccerCon
       createPlayerWidget(sm, ui, 2),
       createPlayerWidget(sm, ui, 3),
     ],
-    playButton: new PlayWidget(
-      sm,
-      () => ui.layouts.playButton,
-      () => {
-        return {
-          active: ui.state.stage === SOCCER_STAGE_PLAY
-        }
-      },
-      {
-        onPlay: ui.onUserPlay
-      })
   };
 }

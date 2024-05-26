@@ -25,7 +25,6 @@ export class soccerBot implements Client<soccer> {
     if (event instanceof Timer) {
       if (event.target != this.playerIdx) return;
       if (event.type === PLAY_TIMER) {
-        this.match.execute(PlayApi.create(this.playerIdx), this).catch(console.error);
       }
     }
   }

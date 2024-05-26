@@ -1,5 +1,6 @@
 import { Attribute, Reference, Sprite, ZIndex } from '@bhoos/game-kit-ui';
 import { Avatar, NameTag } from '@bhoos/games-ui';
+import { PLAYER_RADIUS } from '@bhoos/soccer-engine';
 import React from 'react';
 import { Animated, Text } from 'react-native';
 
@@ -30,9 +31,7 @@ export class ProfileSprite implements Sprite {
 
     return (
       <Animated.View ref={this.zIndex.ref} {...props} style={this.layoutStyles}>
-        <Avatar glow={false} path={profile.picture} style={{ top: 10 }} size={52} />
-        <Text>{profile.clickCount}</Text>
-        <NameTag name={profile.name} />
+        <Avatar glow={false} path={profile.picture} size={PLAYER_RADIUS*2} />
       </Animated.View>
     );
   }
