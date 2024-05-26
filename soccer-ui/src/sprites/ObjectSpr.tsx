@@ -1,8 +1,7 @@
-import { Attribute, Image, ImageBackground, Reference, Sprite, timingAnim } from "@bhoos/game-kit-ui";
-import { Canvas, Circle, Color, Group, RuntimeShader, Skia, useClock, vec } from "@shopify/react-native-skia";
+import { Attribute, Image, Sprite, timingAnim } from "@bhoos/game-kit-ui";
 import { StyleSheet } from "react-native";
 import { Animated} from 'react-native';
-import { Position } from "@bhoos/soccer-engine/src/soccer"; 
+import { Position } from "@bhoos/soccer-engine";
 
 
 export class CircleSprite implements Sprite {

@@ -16,6 +16,7 @@ export class ControllerSprite implements Sprite {
   private touchStart: EventCallBack;
   private touchEnd: EventCallBack;
   private touchMove: EventCallBack;
+  ref = new Reference(0);
   constructor({ onClick, touchStart, touchEnd, touchMove }: { onClick: EventCallBack; touchStart: EventCallBack; touchEnd: EventCallBack; touchMove: EventCallBack}) {
     this.onClick = onClick;
     this.touchStart = touchStart;
@@ -25,6 +26,7 @@ export class ControllerSprite implements Sprite {
 
   reactComponent(): JSX.Element {
     // <Rect height={800} width= {1000} />
+    const _ = Reference.use(this.ref);
     return (
       <View style= {StyleSheet.absoluteFill}>
       <Pressable  onTouchMove={this.touchMove} onTouchStart={this.touchStart} onLongPress={()=>{}} onPress={this.onClick} onTouchEnd={this.touchEnd}>

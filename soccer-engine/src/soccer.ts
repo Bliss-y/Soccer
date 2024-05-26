@@ -113,7 +113,7 @@ export class Player extends GameObject {
   }
 
   onInput(api: PlayApi, ball: Ball) {
-    if (api.click) {
+    if (api.click && this.isBallAttached) {
       ball.pass()
       console.log("click");
       return;
@@ -190,6 +190,7 @@ export class Ball extends GameObject {
 
   update(tick: number) {
     if (this.attachedPlayer) {
+      console.log("has attached player");
       this.position.x = this.attachedPlayer.position.x + this.attachedPlayer.direction.x * (this.attachedPlayer.radius + this.radius);
       this.position.y = this.attachedPlayer.position.y + this.attachedPlayer.direction.y * (this.attachedPlayer.radius + this.radius);
     } else {
@@ -206,8 +207,11 @@ export class Ball extends GameObject {
         this.movement_speed.y = 0;
       }
     }
+    if(!this.attachedPlayer) {
+      this.invTick = 0;
+    }
 
-    if (this.attachedPlayer && this.invTick) {
+    if (this.invTick > 0) {
       console.log("invtick", this.invTick);
       this.invTick--;
     }
@@ -218,9 +222,6 @@ export class Ball extends GameObject {
         if (cl.x != 0 || cl.y != 0) {
           if(this.invTick >0) {
             this.invTick = 0;
-            return;
-          }
-          if (p == this.attachedPlayer) {
             return;
           }
           if (this.attachedPlayer) {
@@ -238,7 +239,7 @@ export class Ball extends GameObject {
       })
     }
 
-    if (this.position.y + this.radius >= goalPosts[0].y - GOAL_POST_WIDTH/2 && this.position.y - this.radius <= goalPosts[0].y + GOAL_POST_WIDTH/2) {
+    if (this.position.y >= goalPosts[0].y && this.position.y <= goalPosts[0].y + GOAL_POST_WIDTH/2) {
       // someone may have scored gaol
       if (this.position.x + this.radius >= goalPosts[0].x) {
         // team one scored

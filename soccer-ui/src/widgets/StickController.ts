@@ -23,7 +23,7 @@ export class StickController extends ControllerWidget {
   flickcb: (p: Position) => void;
   touchMove(e: GestureResponderEvent): void {
     const start = this.initialTouchPosition!;
-    const now = this.currentTouchPosition!;
+    const now = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
     if (e.timeStamp - this.dt < 20) {
       return;
     }
@@ -35,7 +35,7 @@ export class StickController extends ControllerWidget {
       this.cb({x: 0, y: 0})
       return;
     }
-    console.log("moving", dx / total, dy / total);
+    console.log("moving",this.initialTouchPosition, dx / total, dy / total);
     this.cb({ x: dx / total, y: dy / total });
   }
 

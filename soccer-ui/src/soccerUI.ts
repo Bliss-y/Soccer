@@ -17,11 +17,12 @@ import { GAME_SIZE_X, GAME_SIZE_Y, Position } from '@bhoos/soccer-engine';
 import { CircleSprite } from './sprites/ObjectSpr';
 import { PostSprite } from './sprites/GoalPost';
 import { ScoreSprite } from './sprites/scoreSpr';
+import { EricSprite } from './sprites/EricSpr';
 
 const ANIMATION_SPEED = 1;
 const FLIP_SPEED_300 = ANIMATION_SPEED * 300;
 const timing500 = timingAnim({ duration: ANIMATION_SPEED * 500, useNativeDriver: true });
-const timing300 = timingAnim({ duration: ANIMATION_SPEED * 300, useNativeDriver: true });
+const timing1500 = timingAnim({ duration: ANIMATION_SPEED * 1500, useNativeDriver: true });
 const timing200 = timingAnim({ duration: ANIMATION_SPEED * 200, useNativeDriver: true });
 const animFrame = timingAnim({ duration: 50, useNativeDriver: true });
 
@@ -41,9 +42,11 @@ export class soccerUI implements UI<soccer, soccerUIEnv> {
   
   controller: StickController;
   public layouts: soccerLayouts;
+  team!: number;
   private _layout: CoordinateSystem;
   private widgets;
   scorespr: ScoreSprite;
+  eric: EricSprite;
 
   constructor(layout: CoordinateSystem, config: ConfigOf<soccer>) {
     console.log('Creating UI');
@@ -75,15 +78,27 @@ export class soccerUI implements UI<soccer, soccerUIEnv> {
       PLAYER_RADIUS/2, {x: GAME_SIZE_X/2, y: GAME_SIZE_Y/2}, "blue"
     ))
     this.scorespr = this.sm.registerSprite(new ScoreSprite({x: GAME_SIZE_X/2, y: 0}));
-
-
-
+    this.eric = this.sm.registerSprite(new EricSprite({x: GAME_SIZE_X/2, y: GAME_SIZE_Y/2}));
     return this;
   }
 
   onStateEvent(event: StateEvent): void {
     this.ball.position.x.animateTo(event.ball.position.x - PLAYER_RADIUS/2, animFrame);
     this.ball.position.y.animateTo(event.ball.position.y - PLAYER_RADIUS/2, animFrame);
+    if(this.scorespr.ref.value[Number(!(this.team))] < event.ball.scores[Number(!this.team)]) {
+      this.eric.picture.setValue("sadEric");
+      this.eric.opacity.setValue(1);
+      this.eric.scale.setValue(1);
+      this.eric.opacity.animateTo(0, timing1500);
+      this.eric.scale.animateTo(5, timing1500);
+    }
+    if(this.scorespr.ref.value[this.team] < event.ball.scores[this.team]) {
+      this.eric.picture.setValue("erichappy");
+      this.eric.opacity.setValue(1);
+      this.eric.scale.setValue(1);
+      this.eric.opacity.animateTo(0, timing1500);
+      this.eric.scale.animateTo(5, timing1500);
+    }
     this.scorespr.ref.setValue([...event.ball.scores]);
     event.ball.players.forEach((p, idx)=> {
       const newpos = toMinusPos(p.position);
@@ -107,6 +122,7 @@ export class soccerUI implements UI<soccer, soccerUIEnv> {
   }
 
   onLayoutUpdate(layout: CoordinateSystem) {
+    this.controller.spr.ref.setValue(this.controller.spr.ref.value+1);
 
   }
 
@@ -134,6 +150,7 @@ export class soccerUI implements UI<soccer, soccerUIEnv> {
       this.widgets.profiles.forEach(
         p=>p.draw()
       );
+      this.team = Math.floor(this.state.userIdx/2);
     };
   }
 
