@@ -25,7 +25,7 @@ export async function soccerLoop(match: Match<soccer>, config: soccerConfig) {
   const state = match.getState();
 
   const players = match.getPlayers().map((e, idx)=> {
-    return new Player({y: GAME_SIZE_Y/2, x: GAME_SIZE_X - 150 * (4 - idx)}, PLAYER_RADIUS, Math.floor(idx / 2));
+    return new Player({y: GAME_SIZE_Y/2, x: GAME_SIZE_X - 200 * (3 - idx) - 100}, PLAYER_RADIUS, Math.floor(idx / 2));
   })
   console.log(players.map(p=>p.position));
 
@@ -34,15 +34,18 @@ export async function soccerLoop(match: Match<soccer>, config: soccerConfig) {
   const ball = new Ball({x: GAME_SIZE_X/2, y: GAME_SIZE_Y/2}, PLAYER_RADIUS/2, ()=> {
     players.forEach((p,i)=> {
       p.movementSpeed = {x:0, y:0}
-      p.direction = {x:0, y:0}
+      p.direction = {x:0, y:1}
       p.position = {...p.initialPosition}
     })
     ball.position.y = GAME_SIZE_Y/2
     ball.position.x = GAME_SIZE_X/2
+    ball.movement_speed.x = 0
+    ball.movement_speed.y = 0
+    haltTick = 40;
   });
   ball.players = players;
 
-  ball.position = {...players[3].position}
+  ball.position = {x: GAME_SIZE_X/2, y: GAME_SIZE_Y/2};
   let haltTick = 50;
   // Stage 1: GAME START
   match.dispatch(StartGameAction.create(match.getPlayers()));
@@ -71,7 +74,7 @@ export async function soccerLoop(match: Match<soccer>, config: soccerConfig) {
       if(!c) {
         return;
       }
-      players[idx].onInput(c);
+      players[idx].onInput(c, ball);
     })
 
     players.forEach(p=> {

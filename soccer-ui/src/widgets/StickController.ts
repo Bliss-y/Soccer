@@ -40,7 +40,6 @@ export class StickController extends ControllerWidget {
   }
 
   touchEnd(e: GestureResponderEvent): void {
-    console.log("moving", 0, 0);
     this.cb({ x: 0, y: 0 });
   }
 

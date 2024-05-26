@@ -42,17 +42,17 @@ export abstract class ControllerWidget extends Widget<unknown,unknown,SpriteMana
     super(sm, computeLayout, computeState);
     this.spr = sm.registerSprite(new ControllerSprite({
       onClick: (e: GestureResponderEvent) => {
-        if(this.isTouching) {
+        if(this.isTouching && e.nativeEvent.timestamp - this.initialTouchTimestamp! > 200) {
           return;
         }
         console.log("controller clicked!!!!!", e.nativeEvent.locationX, e.nativeEvent.locationY);
         this.onClick(e);
       },
-      //@ts-ignore
       touchEnd: (e) => {
         if (e.nativeEvent.identifier != this.touch?.identifier) {
           if(e.nativeEvent.identifier == this.touch2?.id) {
-            if(Date.now() - this.touch2.timestamp < 200) {
+            if(e.nativeEvent.timestamp - this.touch2.timestamp < 100) {
+              console.log("touch end tick");
               this.onClick(e);
             }
             this.touch2 = undefined;
@@ -64,15 +64,24 @@ export abstract class ControllerWidget extends Widget<unknown,unknown,SpriteMana
           square(square(e.nativeEvent.locationX - this.initialTouchPosition!.x) + square(e.nativeEvent.locationY - this.initialTouchPosition!.y)) > 30 * 30) {
           this.flick(e);
           console.log("flicked!!");
+          return;
+        }
+        console.log(this.initialTouchTimestamp! - Date.now());
+        if(e.nativeEvent.timestamp - this.initialTouchTimestamp! < 100) {
+          console.log("clicked?");
+          this.onClick(e);
+          return;
         }
         this.touchEnd(e);
         this.initialTouchPosition = undefined;
         this.initialTouchTimestamp = undefined;
         this.isTouching = false;
       },
+
       touchStart: (e) => {
         if (this.isTouching) {
           this.touch2 = {id: '', timestamp: 0};
+          console.log("touch2");
           this.touch2!.id = e.nativeEvent.identifier;
           this.touch2!.timestamp = e.nativeEvent.timestamp;
           return;
@@ -92,6 +101,9 @@ export abstract class ControllerWidget extends Widget<unknown,unknown,SpriteMana
         }
         if (e.nativeEvent.timestamp - this.initialTouchTimestamp! < 100 &&
           square(square(e.nativeEvent.locationX - this.initialTouchPosition!.x) + square(e.nativeEvent.locationY - this.initialTouchPosition!.y)) > 30 * 30) {
+          return;
+        }
+        if(e.nativeEvent.timestamp - this.initialTouchTimestamp! < 100) {
           return;
         }
         console.log("moving");
